@@ -1,9 +1,12 @@
+"use client"
+import Navbar from './components/navbar/page.jsx'
+import AuthCard from './components/authcard/page.jsx'
 
-import Navbar from './components/pages/navbar'
 export default function Home() {
   return (
     <div className="text-zinc-700">
       <Navbar/>
+      <AuthCard/>
     </div>
   );
 }
