@@ -1,9 +1,9 @@
 
-import Navbar from './components/pages/navbar'
+import HeroSection from './components/heroSection/page'
 export default function Home() {
   return (
     <div className="text-zinc-700">
-      <Navbar/>
+      <HeroSection/>
     </div>
   );
 }
