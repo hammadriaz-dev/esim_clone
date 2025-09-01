@@ -1,14 +1,15 @@
 import React from 'react';
 import { FaFacebookF, FaInstagram, FaLinkedinIn, FaGooglePlay, FaApple } from 'react-icons/fa';
-import { SiVisa, SiMastercard, SiAmericanexpress, SiStripe, SiPaypal, SiGooglepay } from 'react-icons/si';
 
 const Footer = () => {
   return (
     <footer className="bg-white text-gray-700">
       {/* Top section with navigation and newsletter */}
-      <div className="bg-orange-500 py-6 px-10 flex items-center justify-between text-white">
+      <div className="bg-orange-500 py-6 px-10 flex items-center justify-between text-white rounded-tl-2xl rounded-tr-2xl">
         <div className="flex items-center space-x-6">
-          <span className="text-xl font-bold">eSIM White Label</span>
+          <span className="text-xl font-bold flex">
+            <img src="/assets/icons/white-logo.png" alt="" className="pr-2" />
+            eSIM White Label</span>
           <a href="#" className="hover:underline">Contact Us</a>
           <a href="#" className="hover:underline">FAQ</a>
           <a href="#" className="hover:underline">Blog</a>
@@ -91,12 +92,11 @@ const Footer = () => {
       <div className="bg-gray-800 text-gray-400 py-4 px-6 flex flex-col md:flex-row items-center justify-between">
         <p className="text-sm mb-2 md:mb-0">© 2025 eSIM White Label. All Rights Reserved</p>
         <div className="flex space-x-3 text-2xl">
-          <SiStripe />
-          <SiPaypal />
-          <SiGooglepay />
-          <SiVisa />
-          <SiMastercard />
-          <SiAmericanexpress />
+          <img src="/assets/icons/payment-method1.png" alt="" />
+          <img src="/assets/icons/payment-method2.png" alt="" />
+          <img src="/assets/icons/payment-method3.png" alt="" />
+          <img src="/assets/icons/payment-method4.png" alt="" />
+          <img src="/assets/icons/payment-method5.png" alt="" />
         </div>
       </div>
     </footer>
