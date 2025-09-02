@@ -25,7 +25,7 @@ export const useRegistration=()=>{
     const queryClient =useQueryClient()
 
     return useMutation({
-        mutationFn: async ({emai,password,name,otp})=>{
+        mutationFn: async ({email,password,name,otp})=>{
             const { data } = await axiosInstance.post('/register', { email, password, name, otp });
             return data
         },

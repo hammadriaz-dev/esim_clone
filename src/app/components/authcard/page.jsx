@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 // The main component that renders either the Login or Signup form
 const App = () => {
@@ -14,6 +14,36 @@ const App = () => {
 // Reusable component for both Login and Signup forms
 const AuthCard = ({ currentPage, setCurrentPage }) => {
     const isLogin = currentPage === 'login';
+
+    // State for the multi-step signup process
+    const [signupStep, setSignupStep] = useState(1);
+    const [email, setEmail] = useState('');
+    const [otp, setOtp] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+
+    // Function to handle moving to the next step
+    const handleNextStep = (e) => {
+        e.preventDefault();
+        setSignupStep(prevStep => prevStep + 1);
+    };
+
+    // Function to handle moving to the previous step
+    const handlePrevStep = () => {
+        setSignupStep(prevStep => prevStep - 1);
+    };
+
+    // Function to handle the final signup submission
+    const handleSignupSubmit = (e) => {
+        e.preventDefault();
+        if (password !== confirmPassword) {
+            console.error("Passwords do not match!");
+            return;
+        }
+        console.log("Signup complete:", { email, password });
+        setCurrentPage('login');
+        setSignupStep(1);
+    };
 
     return (
         <div className="bg-white overflow-hidden flex flex-col md:flex-row w-full max-w-6xl mt-12">
@@ -40,82 +70,151 @@ const AuthCard = ({ currentPage, setCurrentPage }) => {
 
             {/* Right side with the form */}
             <div className="w-full md:w-3/5 p-8 lg:p-12 flex flex-col justify-center">
-                <h2 className="text-4xl font-semibold text-gray-800 mb-6 text-center">{isLogin ? 'Login' : 'Signup'}</h2>
+                <h2 className="text-4xl font-semibold text-gray-800 mb-6 text-center">{isLogin ? 'Login' : `Signup Step ${signupStep}`}</h2>
 
-                {/* Form fields */}
-                <div className="space-y-4">
-                    <div>
-                        <label htmlFor="email" className="block text-gray-700 font-medium mb-1">Email</label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            placeholder="example@123.com"
-                            className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="password" className="block text-gray-700 font-medium mb-1">Password</label>
-                        <div className="relative">
-                            <input
-                                type="password"
-                                id="password"
-                                name="password"
-                                placeholder="************"
-                                className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 pr-10"
-                            />
-                            <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 cursor-pointer">
-                                {/* Eye icon for showing password */}
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
-                                    <path fillRule="evenodd" d="M.661 10.372C3.12 4.144 6.848 2 10 2s6.88 2.144 9.339 8.372a1 1 0 010 1.256C16.88 17.856 13.152 20 10 20s-6.88-2.144-9.339-8.372a1 1 0 010-1.256zM10 18c2.977 0 5.76-1.54 8-4.148-2.24-2.607-5.023-4.148-8-4.148S4.24 11.245 2 13.852C4.24 16.46 7.023 18 10 18z" clipRule="evenodd" />
-                                </svg>
-                            </span>
-                        </div>
-                    </div>
-                    {!isLogin && (
-                        <div>
-                            <label htmlFor="confirmPassword" className="block text-gray-700 font-medium mb-1">Confirm Password</label>
-                            <div className="relative">
-                                <input
-                                    type="password"
-                                    id="confirmPassword"
-                                    name="confirmPassword"
-                                    placeholder="************"
-                                    className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 pr-10"
-                                />
-                                <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 cursor-pointer">
-                                    {/* Eye icon for showing password */}
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
-                                        <path fillRule="evenodd" d="M.661 10.372C3.12 4.144 6.848 2 10 2s6.88 2.144 9.339 8.372a1 1 0 010 1.256C16.88 17.856 13.152 20 10 20s-6.88-2.144-9.339-8.372a1 1 0 010-1.256zM10 18c2.977 0 5.76-1.54 8-4.148-2.24-2.607-5.023-4.148-8-4.148S4.24 11.245 2 13.852C4.24 16.46 7.023 18 10 18z" clipRule="evenodd" />
-                                    </svg>
-                                </span>
+                <form onSubmit={e => isLogin ? e.preventDefault() : (signupStep === 3 ? handleSignupSubmit(e) : handleNextStep(e))}>
+                    {/* Conditional rendering for Login or Signup steps */}
+                    {isLogin ? (
+                        <>
+                            <div className="space-y-4">
+                                <div>
+                                    <label htmlFor="email" className="block text-gray-700 font-medium mb-1">Email</label>
+                                    <input
+                                        type="email"
+                                        id="email"
+                                        name="email"
+                                        placeholder="example@123.com"
+                                        className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="password" className="block text-gray-700 font-medium mb-1">Password</label>
+                                    <div className="relative">
+                                        <input
+                                            type="password"
+                                            id="password"
+                                            name="password"
+                                            placeholder="************"
+                                            className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 pr-10"
+                                        />
+                                        <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 cursor-pointer">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
+                                                <path fillRule="evenodd" d="M.661 10.372C3.12 4.144 6.848 2 10 2s6.88 2.144 9.339 8.372a1 1 0 010 1.256C16.88 17.856 13.152 20 10 20s-6.88-2.144-9.339-8.372a1 1 0 010-1.256zM10 18c2.977 0 5.76-1.54 8-4.148-2.24-2.607-5.023-4.148-8-4.148S4.24 11.245 2 13.852C4.24 16.46 7.023 18 10 18z" clipRule="evenodd" />
+                                            </svg>
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
+                            <div className="flex justify-between items-center text-sm my-4">
+                                <div className="flex items-center">
+                                    <input type="checkbox" id="rememberMe" className="rounded text-orange-500 focus:ring-orange-500" />
+                                    <label htmlFor="rememberMe" className="ml-2 text-gray-600">Remember me</label>
+                                </div>
+                                <a href="#" className="text-gray-500 hover:underline">Forgot Password?</a>
+                            </div>
+                        </>
+                    ) : (
+                        // Signup Steps
+                        <div className="space-y-4">
+                            {signupStep === 1 && (
+                                <div>
+                                    <label htmlFor="email" className="block text-gray-700 font-medium mb-1">Email</label>
+                                    <input
+                                        type="email"
+                                        id="email"
+                                        name="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        placeholder="example@123.com"
+                                        className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                    />
+                                </div>
+                            )}
+                            {signupStep === 2 && (
+                                <div>
+                                    <label htmlFor="otp" className="block text-gray-700 font-medium mb-1">Verify OTP</label>
+                                    <input
+                                        type="text"
+                                        id="otp"
+                                        name="otp"
+                                        value={otp}
+                                        onChange={(e) => setOtp(e.target.value)}
+                                        placeholder="Enter the 6-digit code"
+                                        className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                    />
+                                </div>
+                            )}
+                            {signupStep === 3 && (
+                                <>
+                                    <div>
+                                        <label htmlFor="password" className="block text-gray-700 font-medium mb-1">Password</label>
+                                        <div className="relative">
+                                            <input
+                                                type="password"
+                                                id="password"
+                                                name="password"
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                                placeholder="************"
+                                                className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 pr-10"
+                                            />
+                                            <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 cursor-pointer">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
+                                                    <path fillRule="evenodd" d="M.661 10.372C3.12 4.144 6.848 2 10 2s6.88 2.144 9.339 8.372a1 1 0 010 1.256C16.88 17.856 13.152 20 10 20s-6.88-2.144-9.339-8.372a1 1 0 010-1.256zM10 18c2.977 0 5.76-1.54 8-4.148-2.24-2.607-5.023-4.148-8-4.148S4.24 11.245 2 13.852C4.24 16.46 7.023 18 10 18z" clipRule="evenodd" />
+                                                </svg>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label htmlFor="confirmPassword" className="block text-gray-700 font-medium mb-1">Confirm Password</label>
+                                        <div className="relative">
+                                            <input
+                                                type="password"
+                                                id="confirmPassword"
+                                                name="confirmPassword"
+                                                value={confirmPassword}
+                                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                                placeholder="************"
+                                                className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 pr-10"
+                                            />
+                                            <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 cursor-pointer">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
+                                                    <path fillRule="evenodd" d="M.661 10.372C3.12 4.144 6.848 2 10 2s6.88 2.144 9.339 8.372a1 1 0 010 1.256C16.88 17.856 13.152 20 10 20s-6.88-2.144-9.339-8.372a1 1 0 010-1.256zM10 18c2.977 0 5.76-1.54 8-4.148-2.24-2.607-5.023-4.148-8-4.148S4.24 11.245 2 13.852C4.24 16.46 7.023 18 10 18z" clipRule="evenodd" />
+                                                </svg>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     )}
-                </div>
-
-                {/* Checkbox and forgotten password link */}
-                <div className="flex justify-between items-center text-sm my-4">
-                    <div className="flex items-center">
-                        <input type="checkbox" id="rememberMe" className="rounded text-orange-500 focus:ring-orange-500" />
-                        <label htmlFor="rememberMe" className="ml-2 text-gray-600">Remember me</label>
+                    
+                    {/* Action button */}
+                    <div className="flex items-center space-x-4 mt-6">
+                        {!isLogin && signupStep > 1 && (
+                            <button
+                                type="button"
+                                onClick={handlePrevStep}
+                                className="w-1/2 bg-gray-200 text-gray-700 rounded-xl py-3 font-semibold hover:bg-gray-300 transition duration-300 ease-in-out"
+                            >
+                                Back
+                            </button>
+                        )}
+                        <button type="submit" className={`w-full bg-orange-500 text-white rounded-xl py-3 font-semibold hover:bg-orange-600 transition duration-300 ease-in-out ${!isLogin && signupStep > 1 ? 'w-1/2' : 'w-full'}`}>
+                            {isLogin ? 'Sign In' : (signupStep === 3 ? 'Signup' : 'Next')}
+                        </button>
                     </div>
-                    <a href="#" className="text-gray-500 hover:underline">Forgot Password?</a>
-                </div>
-
-                {/* Action button */}
-                <button className="w-full bg-orange-500 text-white rounded-xl py-3 font-semibold hover:bg-orange-600 transition duration-300 ease-in-out">
-                    {isLogin ? 'Sign In' : 'Signup'}
-                </button>
+                </form>
 
                 {/* Switch between login and signup */}
                 <div className="text-center text-sm text-gray-500 my-6">
                     {isLogin ? (
                         <span>Don't have an account? <button onClick={() => setCurrentPage('signup')} className="text-blue-500 hover:underline font-medium">Signup</button></span>
                     ) : (
-                        <span>Already have an account? <button onClick={() => setCurrentPage('login')} className="text-blue-500 hover:underline font-medium">Sign In</button></span>
+                        <span>Already have an account? <button onClick={() => { setCurrentPage('login'); setSignupStep(1); }} className="text-blue-500 hover:underline font-medium">Sign In</button></span>
                     )}
                 </div>
 
