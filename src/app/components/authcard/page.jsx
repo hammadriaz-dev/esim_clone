@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import Cookies from 'js-cookie';
+import { useSendOtpMutation, useRegistration } from '../../hooks/useAuthMutation';
+import { useAuth } from '../../context/authContext';
 
 // The main component that renders either the Login or Signup form
 const App = () => {
     const [currentPage, setCurrentPage] = useState('login');
-
+    
     return (
         <div className="min-h-screen bg-white flex items-center justify-center font-sans p-4">
             <AuthCard currentPage={currentPage} setCurrentPage={setCurrentPage} />
@@ -14,108 +17,251 @@ const App = () => {
 // Reusable component for both Login and Signup forms
 const AuthCard = ({ currentPage, setCurrentPage }) => {
     const isLogin = currentPage === 'login';
-
+    const { login } = useAuth();
+    
+    // State for the form fields
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [name, setName] = useState('');
+    const [otp, setOtp] = useState('');
+    const [signupStep, setSignupStep] = useState(1);
+    const [message, setMessage] = useState('');
+    
+    // React Query hooks for API mutations
+    const { mutate: sendOtp, isPending: isOtpLoading, error: otpError } = useSendOtpMutation();
+    const { mutate: registerUser, isPending: isRegistering, error: registrationError } = useRegistration();
+    
+    // Handler for the first form submission (sending OTP)
+    const handleSendOtp = (e) => {
+        e.preventDefault();
+        setMessage('');
+        
+        if (!email || !password) {
+            setMessage('Email and password are required.');
+            return;
+        }
+        
+        sendOtp({ email, password }, {
+            onSuccess: () => {
+                setMessage('OTP sent successfully! Please check your email and fill out the remaining fields.');
+                setSignupStep(2); 
+            },
+            onError: (error) => {
+                setMessage(error.response?.data?.message || 'Error sending OTP. Please try again.');
+            }
+        });
+    };
+    
+    // Handler for the second form submission (final registration)
+    const handleRegistration = (e) => {
+        e.preventDefault();
+        setMessage('');
+        
+        if (!email || !password || !name || !otp) {
+            setMessage('All fields are required.');
+            return;
+        }
+        
+        registerUser({ email, password, name, otp }, {
+            onSuccess: (data) => {
+                Cookies.set('userToken', data.token, { expires: 7 });
+                login();
+                setCurrentPage('login');
+                setMessage('Registration successful!');
+            },
+            onError: (error) => {
+                setMessage(error.response?.data?.message || 'Registration failed. Please check your OTP.');
+            }
+        });
+    };
+    
     return (
-        <div className="bg-white overflow-hidden flex flex-col md:flex-row w-full max-w-6xl mt-12">
+        <div className="bg-white overflow-hidden flex flex-col md:flex-row w-full max-w-6xl mt-12 rounded-3xl shadow-xl">
             {/* Left side with marketing image and text */}
             <div className="relative w-full md:w-2/5 bg-cover bg-center rounded-3xl p-8 flex flex-col justify-end text-white" style={{
-                backgroundImage: "url('assets/Images/loginPageImage.jpeg')",
+                backgroundImage: "url('https://placehold.co/600x800/226d97/FFFFFF?text=eSIM+Solution')",
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat'
             }}>
-                {/* Trustpilot review section */}
-                <div className="absolute top-8 left-8 flex items-center bg-opacity-20 px-4 py-2 rounded-full backdrop-blur-sm">
+                <div className="absolute top-8 left-8 flex items-center bg-gray-500 bg-opacity-20 px-4 py-2 rounded-full backdrop-blur-sm">
                     <div className="text-sm font-semibold mr-2">Excellent</div>
-                    <img src="/assets/icons/5star.jpeg" alt="" />
+                    <svg className="w-20 h-4" viewBox="0 0 100 20" fill="currentColor">
+                        <path d="M10,0L13,6L20,7L15,12L16,19L10,16L4,19L5,12L0,7L7,6Z" fill="#00B67A" />
+                        <path d="M30,0L33,6L40,7L35,12L36,19L30,16L24,19L25,12L20,7L27,6Z" fill="#00B67A" />
+                        <path d="M50,0L53,6L60,7L55,12L56,19L50,16L44,19L45,12L40,7L47,6Z" fill="#00B67A" />
+                        <path d="M70,0L73,6L80,7L75,12L76,19L70,16L64,19L65,12L60,7L67,6Z" fill="#00B67A" />
+                        <path d="M90,0L93,6L100,7L95,12L96,19L90,16L84,19L85,12L80,7L87,6Z" fill="#00B67A" />
+                    </svg>
                     <span className="text-sm font-light ml-2">436 reviews on</span>
-                    <img src="/assets/icons/singleStar.jpeg" alt="Trustpilot logo" className="h-4 ml-2" />
-                    <span className="text-sm font-light ml-2">Trustpilot</span>
+                    <span className="text-sm font-bold ml-2">Trustpilot</span>
                 </div>
                 <div>
                     <h2 className="text-5xl font-bold mb-4">Your only eSIM Solution</h2>
                     <p className="text-lg font-light">Instant. Secure. Global.</p>
                 </div>
             </div>
-
+            
             {/* Right side with the form */}
             <div className="w-full md:w-3/5 p-8 lg:p-12 flex flex-col justify-center">
                 <h2 className="text-4xl font-semibold text-gray-800 mb-6 text-center">{isLogin ? 'Login' : 'Signup'}</h2>
+                
+                {message && <div className="text-center text-sm mb-4 text-green-600">{message}</div>}
+                {otpError && <div className="text-center text-sm mb-4 text-red-600">{otpError.response?.data?.message || 'Error sending OTP.'}</div>}
+                {registrationError && <div className="text-center text-sm mb-4 text-red-600">{registrationError.response?.data?.message || 'Error registering user.'}</div>}
 
-                {/* Form fields */}
-                <div className="space-y-4">
-                    <div>
-                        <label htmlFor="email" className="block text-gray-700 font-medium mb-1">Email</label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            placeholder="example@123.com"
-                            className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="password" className="block text-gray-700 font-medium mb-1">Password</label>
-                        <div className="relative">
-                            <input
-                                type="password"
-                                id="password"
-                                name="password"
-                                placeholder="************"
-                                className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 pr-10"
-                            />
-                            <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 cursor-pointer">
-                                {/* Eye icon for showing password */}
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
-                                    <path fillRule="evenodd" d="M.661 10.372C3.12 4.144 6.848 2 10 2s6.88 2.144 9.339 8.372a1 1 0 010 1.256C16.88 17.856 13.152 20 10 20s-6.88-2.144-9.339-8.372a1 1 0 010-1.256zM10 18c2.977 0 5.76-1.54 8-4.148-2.24-2.607-5.023-4.148-8-4.148S4.24 11.245 2 13.852C4.24 16.46 7.023 18 10 18z" clipRule="evenodd" />
-                                </svg>
-                            </span>
-                        </div>
-                    </div>
-                    {!isLogin && (
-                        <div>
-                            <label htmlFor="confirmPassword" className="block text-gray-700 font-medium mb-1">Confirm Password</label>
-                            <div className="relative">
-                                <input
-                                    type="password"
-                                    id="confirmPassword"
-                                    name="confirmPassword"
-                                    placeholder="************"
-                                    className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 pr-10"
-                                />
-                                <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 cursor-pointer">
-                                    {/* Eye icon for showing password */}
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
-                                        <path fillRule="evenodd" d="M.661 10.372C3.12 4.144 6.848 2 10 2s6.88 2.144 9.339 8.372a1 1 0 010 1.256C16.88 17.856 13.152 20 10 20s-6.88-2.144-9.339-8.372a1 1 0 010-1.256zM10 18c2.977 0 5.76-1.54 8-4.148-2.24-2.607-5.023-4.148-8-4.148S4.24 11.245 2 13.852C4.24 16.46 7.023 18 10 18z" clipRule="evenodd" />
-                                    </svg>
-                                </span>
+                <form onSubmit={isLogin ? e => e.preventDefault() : signupStep === 1 ? handleSendOtp : handleRegistration}>
+                    {isLogin ? (
+                        <>
+                            {/* Login fields */}
+                            <div className="space-y-4">
+                                <div>
+                                    <label htmlFor="email" className="block text-gray-700 font-medium mb-1">Email</label>
+                                    <input
+                                        type="email"
+                                        id="email"
+                                        name="email"
+                                        placeholder="example@123.com"
+                                        className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="password" className="block text-gray-700 font-medium mb-1">Password</label>
+                                    <div className="relative">
+                                        <input
+                                            type="password"
+                                            id="password"
+                                            name="password"
+                                            placeholder="************"
+                                            className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 pr-10"
+                                        />
+                                        <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 cursor-pointer">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
+                                                <path fillRule="evenodd" d="M.661 10.372C3.12 4.144 6.848 2 10 2s6.88 2.144 9.339 8.372a1 1 0 010 1.256C16.88 17.856 13.152 20 10 20s-6.88-2.144-9.339-8.372a1 1 0 010-1.256zM10 18c2.977 0 5.76-1.54 8-4.148-2.24-2.607-5.023-4.148-8-4.148S4.24 11.245 2 13.852C4.24 16.46 7.023 18 10 18z" clipRule="evenodd" />
+                                            </svg>
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                            <div className="flex justify-between items-center text-sm my-4">
+                                <div className="flex items-center">
+                                    <input type="checkbox" id="rememberMe" className="rounded text-orange-500 focus:ring-orange-500" />
+                                    <label htmlFor="rememberMe" className="ml-2 text-gray-600">Remember me</label>
+                                </div>
+                                <a href="#" className="text-gray-500 hover:underline">Forgot Password?</a>
+                            </div>
+                        </>
+                    ) : (
+                        // Signup Form - Two steps
+                        <>
+                            {signupStep === 1 && (
+                                <div className="space-y-4">
+                                    <div>
+                                        <label htmlFor="email" className="block text-gray-700 font-medium mb-1">Email</label>
+                                        <input
+                                            type="email"
+                                            id="email"
+                                            name="email"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            placeholder="example@123.com"
+                                            className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="password" className="block text-gray-700 font-medium mb-1">Password</label>
+                                        <input
+                                            type="password"
+                                            id="password"
+                                            name="password"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            placeholder="************"
+                                            className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                            {signupStep === 2 && (
+                                <div className="space-y-4">
+                                    <div>
+                                        <label htmlFor="email" className="block text-gray-700 font-medium mb-1">Email</label>
+                                        <input
+                                            type="email"
+                                            id="email"
+                                            name="email"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            placeholder="example@123.com"
+                                            className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="password" className="block text-gray-700 font-medium mb-1">Password</label>
+                                        <input
+                                            type="password"
+                                            id="password"
+                                            name="password"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            placeholder="************"
+                                            className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="name" className="block text-gray-700 font-medium mb-1">Name</label>
+                                        <input
+                                            type="text"
+                                            id="name"
+                                            name="name"
+                                            value={name}
+                                            onChange={(e) => setName(e.target.value)}
+                                            placeholder="Your Name"
+                                            className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="otp" className="block text-gray-700 font-medium mb-1">Verify OTP</label>
+                                        <input
+                                            type="text"
+                                            id="otp"
+                                            name="otp"
+                                            value={otp}
+                                            onChange={(e) => setOtp(e.target.value)}
+                                            placeholder="Enter the 6-digit code"
+                                            className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </>
                     )}
-                </div>
-
-                {/* Checkbox and forgotten password link */}
-                <div className="flex justify-between items-center text-sm my-4">
-                    <div className="flex items-center">
-                        <input type="checkbox" id="rememberMe" className="rounded text-orange-500 focus:ring-orange-500" />
-                        <label htmlFor="rememberMe" className="ml-2 text-gray-600">Remember me</label>
+                    
+                    {/* Action button */}
+                    <div className="flex items-center space-x-4 mt-6">
+                        <button 
+                            type="submit" 
+                            className="w-full bg-orange-500 text-white rounded-xl py-3 font-semibold hover:bg-orange-600 transition duration-300 ease-in-out"
+                            disabled={isLogin ? false : (signupStep === 1 ? isOtpLoading : isRegistering)}
+                        >
+                            {isLogin ? 'Sign In' : (signupStep === 1 ? (isOtpLoading ? 'Sending OTP...' : 'Send OTP') : (isRegistering ? 'Signing Up...' : 'Signup'))}
+                        </button>
                     </div>
-                    <a href="#" className="text-gray-500 hover:underline">Forgot Password?</a>
-                </div>
-
-                {/* Action button */}
-                <button className="w-full bg-orange-500 text-white rounded-xl py-3 font-semibold hover:bg-orange-600 transition duration-300 ease-in-out">
-                    {isLogin ? 'Sign In' : 'Signup'}
-                </button>
+                </form>
 
                 {/* Switch between login and signup */}
                 <div className="text-center text-sm text-gray-500 my-6">
                     {isLogin ? (
-                        <span>Don't have an account? <button onClick={() => setCurrentPage('signup')} className="text-blue-500 hover:underline font-medium">Signup</button></span>
+                        <span>Don't have an account? <button onClick={() => { setCurrentPage('signup'); setSignupStep(1); }} className="text-blue-500 hover:underline font-medium">Signup</button></span>
                     ) : (
-                        <span>Already have an account? <button onClick={() => setCurrentPage('login')} className="text-blue-500 hover:underline font-medium">Sign In</button></span>
+                        <span>Already have an account? <button onClick={() => { setCurrentPage('login'); setSignupStep(1); }} className="text-blue-500 hover:underline font-medium">Sign In</button></span>
                     )}
                 </div>
 

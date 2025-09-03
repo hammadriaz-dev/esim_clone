@@ -1,8 +1,7 @@
+// components/HeroSection.js
 'use client'
 import React from 'react';
-import Button from '../utils/buttons';
-
-
+import Button from '../utils/buttons'; 
 const HeroSection = ({
   heading = 'MANAGE YOUR SIM HERE.',
   paragraph = 'Our team is here to assist you promptly through any of these channels.',
@@ -17,7 +16,6 @@ const HeroSection = ({
   const sectionStyle = bgImage ? 
     { backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'top' } :
     {};
-
   const sectionClasses = bgImage ?
     "relative min-h-[50vh] flex items-center justify-center text-center m-4 rounded-t-4xl p-4 overflow-hidden" :
     "relative min-h-[50vh] flex items-center justify-center text-center m-4 rounded-t-4xl p-4 bg-gradient-to-b from-[#FFA07A] via-[#FFDAB9] to-white";
@@ -31,13 +29,13 @@ const HeroSection = ({
         <img
           src={vector}
           alt="Vector art"
-          className="absolute top-8 right-30 w-20 h-20 z-10"
+          className="absolute top-5 right-30 w-20 h-20 z-10"
         />
       )}
 
-      <div className="max-w-4xl mx-auto z-20 text-white py-4">
-         {/* Heading */}
-        <h1 className="text-white pt-20 text-2xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-6xl
+      <div className="max-w-4xl mx-auto z-20 text-white pt-10">
+        {/* Heading */}
+        <h1 className="text-white text-2xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-6xl
                        font-bold uppercase tracking-wide leading-tight mb-8">
           {heading}
         </h1>
@@ -47,7 +45,6 @@ const HeroSection = ({
           {paragraph}
         </p>
 
-       
         {/* Dynamic content (buttons or search bar) */}
         {customContent ? (
           customContent

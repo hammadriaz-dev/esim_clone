@@ -4,7 +4,7 @@ import { FaArrowRight } from 'react-icons/fa';
 
 const CountryCard = ({ imageUrl, countryName, price }) => {
   return (
-    <div className="flex-none w-64 mr-6 bg-white rounded-xl shadow-sm border border-black overflow-hidden">
+    <div className="flex-none w-64 mr-6 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       <div className="relative w-full h-40">
         <img
           src={imageUrl}

@@ -35,7 +35,9 @@ const data = {
   ],
 };
 
-const eSIMTabs = () => {
+
+const ESIMTabs = () => {
+
   const [activeTab, setActiveTab] = useState('local');
 
   const renderContent = () => {
@@ -111,4 +113,5 @@ const eSIMTabs = () => {
   );
 };
 
-export default eSIMTabs;
+
+export default ESIMTabs;

@@ -3,15 +3,13 @@
 import React, { useRef, useState, useEffect } from 'react';
 import CountryCard from '../utils/countryCard';
 
-
 const countries = [
-  { id: 1, name: "JAPAN", imageUrl: "assets/Images/Japan.png", price: "3.3" },
+  { id: 1, name: "JAPAN", imageUrl: "assets/Images/japan.png", price: "3.3" },
   { id: 2, name: "TURKEY", imageUrl: "assets/Images/Turkey.png", price: "3.3" },
   { id: 3, name: "UNITED STATES", imageUrl: "assets/Images/US.png", price: "3.3" },
   { id: 4, name: "RUSSIA", imageUrl: "assets/Images/Russia.png", price: "3.3" },
   { id: 5, name: "UNITED STATES", imageUrl: "assets/Images/US.png", price: "3.3" },
   { id: 6, name: "RUSSIA", imageUrl: "assets/Images/Russia.png", price: "3.3" },
-  
 ];
 
 const CountrySlider = () => {
@@ -72,7 +70,8 @@ const CountrySlider = () => {
   }, []);
 
   return (
-    <section className="mt-[-100] pb-10 bg-gray-50 overflow-y-hidden z-10">
+
+    <section className="py-12 bg-gray-50 overflow-y-hidden mt-[-200]">
       <div className="container mx-auto px-6">
         <div 
           className="flex overflow-x-hidden cursor-grab"

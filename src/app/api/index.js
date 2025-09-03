@@ -1,10 +1,10 @@
-import axios from 'axiox'
-import { headers } from 'next/headers';
+import axios from 'axios'
 
-const BaseUrl='https://test.esimwhitelabel.com/api';
+// const BaseUrl='https://test.esimwhitelabel.com/api';
+const BaseUrl='https://platform.defymobile.com/api';
 
 const axiosInterfernce = axios.create({
-BaseUrl:BaseUrl,
+baseURL:BaseUrl,
 headers:{
     'Content-Type':'application/json',
     'User-Agent':'insomnia/9.2.0'
