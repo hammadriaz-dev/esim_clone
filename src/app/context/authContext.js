@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
     const login = (token) => {
         // You can optionally pass the token and store it
         if (token) {
-            Cookies.set('userToken', token, { expires: 7 }); // e.g., expires in 7 days
+            Cookies.set('userToken', token, { expires: 7 }); 
         }
         setIsAuthenticated(true);
     };

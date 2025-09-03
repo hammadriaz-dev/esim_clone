@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import Cookies from 'js-cookie';
-import { useSendOtpMutation, useRegistration } from '../../hooks/useAuthMutation';
+import { useSendOtpMutation, useRegistration, useLogin } from '../../hooks/useAuthMutation';
 import { useAuth } from '../../context/authContext';
-
+import { useRouter } from 'next/navigation';
 // The main component that renders either the Login or Signup form
 const App = () => {
+
     const [currentPage, setCurrentPage] = useState('login');
     
     return (
@@ -16,6 +17,7 @@ const App = () => {
 
 // Reusable component for both Login and Signup forms
 const AuthCard = ({ currentPage, setCurrentPage }) => {
+    const router = useRouter()
     const isLogin = currentPage === 'login';
     const { login } = useAuth();
     
@@ -30,6 +32,7 @@ const AuthCard = ({ currentPage, setCurrentPage }) => {
     // React Query hooks for API mutations
     const { mutate: sendOtp, isPending: isOtpLoading, error: otpError } = useSendOtpMutation();
     const { mutate: registerUser, isPending: isRegistering, error: registrationError } = useRegistration();
+    const { mutate: loginUser, isPending: isLoggingIn, error: loginError } = useLogin();
     
     // Handler for the first form submission (sending OTP)
     const handleSendOtp = (e) => {
@@ -75,6 +78,28 @@ const AuthCard = ({ currentPage, setCurrentPage }) => {
         });
     };
     
+    // Handler for the login form submission
+    const handleLogin = (e) => {
+        e.preventDefault();
+        setMessage('');
+    
+        if (!email || !password) {
+            setMessage('Email and password are required.');
+            return;
+        }
+    
+        loginUser({ email, password }, {
+            onSuccess: (data) => {
+                login(data.token);
+                setMessage('Logged in successfully!');
+                router.push('/manage-your-sim'); 
+            },
+            onError: (error) => {
+                setMessage(error.response?.data?.message || 'Login failed. Please check your credentials.');
+            }
+        });
+    };
+    
     return (
         <div className="bg-white overflow-hidden flex flex-col md:flex-row w-full max-w-6xl mt-12 rounded-3xl shadow-xl">
             {/* Left side with marketing image and text */}
@@ -109,30 +134,35 @@ const AuthCard = ({ currentPage, setCurrentPage }) => {
                 {message && <div className="text-center text-sm mb-4 text-green-600">{message}</div>}
                 {otpError && <div className="text-center text-sm mb-4 text-red-600">{otpError.response?.data?.message || 'Error sending OTP.'}</div>}
                 {registrationError && <div className="text-center text-sm mb-4 text-red-600">{registrationError.response?.data?.message || 'Error registering user.'}</div>}
+                {loginError && <div className="text-center text-sm mb-4 text-red-600">{loginError.response?.data?.message || 'Error logging in.'}</div>}
 
-                <form onSubmit={isLogin ? e => e.preventDefault() : signupStep === 1 ? handleSendOtp : handleRegistration}>
+                <form onSubmit={isLogin ? handleLogin : signupStep === 1 ? handleSendOtp : handleRegistration}>
                     {isLogin ? (
                         <>
                             {/* Login fields */}
                             <div className="space-y-4">
                                 <div>
                                     <label htmlFor="email" className="block text-gray-700 font-medium mb-1">Email</label>
-                                    <input
-                                        type="email"
-                                        id="email"
-                                        name="email"
-                                        placeholder="example@123.com"
+                                    <input 
+                                        type="email" 
+                                        id="email" 
+                                        name="email" 
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        placeholder="example@123.com" 
                                         className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
                                     />
                                 </div>
                                 <div>
                                     <label htmlFor="password" className="block text-gray-700 font-medium mb-1">Password</label>
                                     <div className="relative">
-                                        <input
-                                            type="password"
-                                            id="password"
-                                            name="password"
-                                            placeholder="************"
+                                        <input 
+                                            type="password" 
+                                            id="password" 
+                                            name="password" 
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            placeholder="************" 
                                             className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 pr-10"
                                         />
                                         <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 cursor-pointer">
@@ -159,28 +189,28 @@ const AuthCard = ({ currentPage, setCurrentPage }) => {
                                 <div className="space-y-4">
                                     <div>
                                         <label htmlFor="email" className="block text-gray-700 font-medium mb-1">Email</label>
-                                        <input
-                                            type="email"
-                                            id="email"
-                                            name="email"
+                                        <input 
+                                            type="email" 
+                                            id="email" 
+                                            name="email" 
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
-                                            placeholder="example@123.com"
+                                            placeholder="example@123.com" 
                                             className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
-                                            required
+                                            required 
                                         />
                                     </div>
                                     <div>
                                         <label htmlFor="password" className="block text-gray-700 font-medium mb-1">Password</label>
-                                        <input
-                                            type="password"
-                                            id="password"
-                                            name="password"
+                                        <input 
+                                            type="password" 
+                                            id="password" 
+                                            name="password" 
                                             value={password}
                                             onChange={(e) => setPassword(e.target.value)}
-                                            placeholder="************"
+                                            placeholder="************" 
                                             className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
-                                            required
+                                            required 
                                         />
                                     </div>
                                 </div>
@@ -189,54 +219,54 @@ const AuthCard = ({ currentPage, setCurrentPage }) => {
                                 <div className="space-y-4">
                                     <div>
                                         <label htmlFor="email" className="block text-gray-700 font-medium mb-1">Email</label>
-                                        <input
-                                            type="email"
-                                            id="email"
-                                            name="email"
+                                        <input 
+                                            type="email" 
+                                            id="email" 
+                                            name="email" 
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
-                                            placeholder="example@123.com"
+                                            placeholder="example@123.com" 
                                             className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
-                                            required
+                                            required 
                                         />
                                     </div>
                                     <div>
                                         <label htmlFor="password" className="block text-gray-700 font-medium mb-1">Password</label>
-                                        <input
-                                            type="password"
-                                            id="password"
-                                            name="password"
+                                        <input 
+                                            type="password" 
+                                            id="password" 
+                                            name="password" 
                                             value={password}
                                             onChange={(e) => setPassword(e.target.value)}
-                                            placeholder="************"
+                                            placeholder="************" 
                                             className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
-                                            required
+                                            required 
                                         />
                                     </div>
                                     <div>
                                         <label htmlFor="name" className="block text-gray-700 font-medium mb-1">Name</label>
-                                        <input
-                                            type="text"
-                                            id="name"
-                                            name="name"
+                                        <input 
+                                            type="text" 
+                                            id="name" 
+                                            name="name" 
                                             value={name}
                                             onChange={(e) => setName(e.target.value)}
-                                            placeholder="Your Name"
+                                            placeholder="Your Name" 
                                             className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
-                                            required
+                                            required 
                                         />
                                     </div>
                                     <div>
                                         <label htmlFor="otp" className="block text-gray-700 font-medium mb-1">Verify OTP</label>
-                                        <input
-                                            type="text"
-                                            id="otp"
-                                            name="otp"
+                                        <input 
+                                            type="text" 
+                                            id="otp" 
+                                            name="otp" 
                                             value={otp}
                                             onChange={(e) => setOtp(e.target.value)}
-                                            placeholder="Enter the 6-digit code"
+                                            placeholder="Enter the 6-digit code" 
                                             className="w-full px-4 py-3 rounded-xl bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
-                                            required
+                                            required 
                                         />
                                     </div>
                                 </div>
@@ -249,9 +279,9 @@ const AuthCard = ({ currentPage, setCurrentPage }) => {
                         <button 
                             type="submit" 
                             className="w-full bg-orange-500 text-white rounded-xl py-3 font-semibold hover:bg-orange-600 transition duration-300 ease-in-out"
-                            disabled={isLogin ? false : (signupStep === 1 ? isOtpLoading : isRegistering)}
+                            disabled={isLogin ? isLoggingIn : (signupStep === 1 ? isOtpLoading : isRegistering)}
                         >
-                            {isLogin ? 'Sign In' : (signupStep === 1 ? (isOtpLoading ? 'Sending OTP...' : 'Send OTP') : (isRegistering ? 'Signing Up...' : 'Signup'))}
+                            {isLogin ? (isLoggingIn ? 'Signing In...' : 'Sign In') : (signupStep === 1 ? (isOtpLoading ? 'Sending OTP...' : 'Send OTP') : (isRegistering ? 'Signing Up...' : 'Signup'))}
                         </button>
                     </div>
                 </form>

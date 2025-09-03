@@ -1,11 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInterfernce from "../api";
 
+                                    //Send Otp
 export const useSendOtpMutation = () => {
     return useMutation({
         mutationFn: async ({ email, password }) => {
             const { data } = await axiosInterfernce.post('/send-otp', { email, password });
-            return data; // Remove the extra { from this line
+            return data;
         },
         onSuccess: () => {
             console.log('OTP code sent successfully');
@@ -16,6 +17,9 @@ export const useSendOtpMutation = () => {
     });
 };
 
+
+
+                // Register Final Step
 export const useRegistration = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -32,3 +36,25 @@ export const useRegistration = () => {
         }
     });
 };
+
+
+
+
+
+                                        //  Log In Hook
+export const useLogin = ()=>{
+    return useMutation({
+        mutationFn: async ({email,password})=>{
+                const {data} =await axiosInterfernce.post('/login',{email,password})
+                return data
+        },
+        onSuccess:()=>{
+            console.log("logged In Successfully");
+            
+        },
+        onError:()=>{
+            console.log("error While Logging In");
+            
+        }
+    })
+}
